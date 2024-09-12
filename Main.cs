@@ -371,6 +371,24 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
             Score = 0
         };
 
+        var saveTrack = new Result
+        {
+            Title = "Save track to library",
+            Action = context =>
+            {
+                Task.Run(async () =>
+                {
+                    var playback = await _spotifyClient.Player.GetCurrentPlayback();
+                    if (playback.Item is FullTrack track)
+                    {
+                        await _spotifyClient.Library.SaveTracks(new LibrarySaveTracksRequest([track.Id]));
+                    }
+                });
+                return true;
+            },
+            Score = 0
+        };
+
         results.Add(previousTrack);
         results.Add(nextTrack);
         results.Add(pausePlayback);
@@ -381,6 +399,7 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
         results.Add(setRepeatContext);
         results.Add(setRepeatOff);
         results.Add(togglePlayback);
+        results.Add(saveTrack);
 
         return results;
     }
@@ -491,7 +510,8 @@ public class Main : IPlugin, IContextMenu, ISettingProvider
             Scope = new List<string>
             {
                 Scopes.UserReadPlaybackState,
-                Scopes.UserModifyPlaybackState
+                Scopes.UserModifyPlaybackState,
+                Scopes.UserLibraryModify
             }
         };
 
